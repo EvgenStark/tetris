@@ -1,12 +1,12 @@
+import random
 import pygame
 import time
 import os
 
-from typing import List, Tuple
 from dataBase import create_data_base, add_record_data_base, get_record_data_base
-from random import choice, randint, randrange
+from random import choice, randrange
 from copy import deepcopy
-
+from itertools import product
 
 if not os.path.exists('tetris.db'):
     create_data_base()
@@ -26,11 +26,19 @@ def set_record(score, time):
     add_record_data_base(score, time)
 
 
+def random_color():
+    n = random.randrange(0, 19)
+    return ['red', 'yellow', 'green', 'blue', 'pink', 'white', 'orange', 'brown', '#b8860b',
+            '#006400', 'lime', 'purple', 'gray', '#00fa9a', '#00ffff', '#00bfff', '#191970', '#8b008b', '#1e90ff'
+            ][n]
+
+
 width, height = 10, 20
 TILE = 35
 GAMES_RES = width * TILE, height * TILE
 RES = 700, 740
 fps = 60
+time_str = ""
 
 FIGURE_POSITION: list[list[tuple[int, int]]] = [
     [(-1, 0), (-2, 0), (0, 0), (1, 0)],
@@ -38,7 +46,7 @@ FIGURE_POSITION: list[list[tuple[int, int]]] = [
     [(-1, 0), (-1, 1), (0, 0), (0, -1)],
     [(0, 0), (-1, 0), (0, 1), (-1, -1)],
     [(0, 0), (0, -1), (0, 1), (1, -1)],
-    [(0, 0), (0, -1), (0, 1), (-1, 0)]
+    [(-1, 0), (-2, 0), (0, 0), (1, 0)]
 ]
 
 if __name__ == '__main__':
@@ -67,14 +75,14 @@ if __name__ == '__main__':
     animation_count, animation_speed, animation_limit = 0, 2, 2000
     figure, next_figure = deepcopy(choice(figures)), deepcopy(choice(figures))
 
-    background = pygame.image.load('pygame.jpg').convert()
-    game_background = pygame.image.load('board.jpg').convert()
+    background = pygame.image.load('images/pygame.jpg').convert()
+    game_background = pygame.image.load('images/board_1.png').convert()
 
-    main_font = pygame.font.Font('unicephalon.otf', 65)
-    font = pygame.font.Font('tet.ttf', 20)
-    game_font = pygame.font.Font('unicephalon.otf', 35)
-    game_text = pygame.font.Font('tet.ttf', 10)
-    sound_text = pygame.font.Font('tet.ttf', 35)
+    main_font = pygame.font.Font('fonts/unicephalon.otf', 65)
+    font = pygame.font.Font('fonts/tet.ttf', 20)
+    game_font = pygame.font.Font('fonts/unicephalon.otf', 35)
+    game_text = pygame.font.Font('fonts/tet.ttf', 10)
+    sound_text = pygame.font.Font('fonts/tet.ttf', 35)
 
     title_tetris = main_font.render('TETRIS', True, pygame.Color('orange'))
     title_score = font.render('score:', True, pygame.Color('red'))
@@ -82,7 +90,7 @@ if __name__ == '__main__':
     title_record_score = font.render('record score:', True, pygame.Color('yellow'))
     title_record_time = font.render('record time:', True, pygame.Color('yellow'))
 
-    get_color = lambda: (randrange(30, 255), randrange(30, 255), randrange(30, 255))
+    get_color = random_color
 
     color, next_color = get_color(), get_color()
 
@@ -97,7 +105,7 @@ if __name__ == '__main__':
 
     pygame.draw.rect(sound, '#00db6a', (0, 0, 200, 70), border_radius=15)
 
-    pygame.mixer.music.load('game.mp3')
+    pygame.mixer.music.load('music/game.mp3')
     pygame.mixer.music.play(-1)
     pause = False
     sound.blit(sound_text.render('SOUND', True, pygame.Color('black')), (15, 15))
@@ -144,6 +152,7 @@ if __name__ == '__main__':
                     time_start = time.time()
                     flag = True
                     pause = False
+                    animation_speed = 2
                 if event.key == pygame.K_ESCAPE:
                     pause = not pause
                     time_pause = time.time()
@@ -199,6 +208,7 @@ if __name__ == '__main__':
                     if not check_borders():
                         figure = deepcopy(figure_old)
                         break
+                rotate2 = False
 
             # вращение влево
             center = figure[0]
@@ -212,6 +222,7 @@ if __name__ == '__main__':
                     if not check_borders():
                         figure = deepcopy(figure_old)
                         break
+                rotate1 = False
 
             # проверка линий
             line, lines = height - 1, 0
@@ -226,7 +237,7 @@ if __name__ == '__main__':
                 else:
                     # увеличение скорости если линии полные
                     if sound_flag:
-                        pygame.mixer.Channel(0).play(pygame.mixer.Sound('line_bonus.mp3'))
+                        pygame.mixer.Channel(0).play(pygame.mixer.Sound('music/line_bonus.mp3'))
                     animation_speed += 2
                     lines += 1
 
@@ -235,7 +246,7 @@ if __name__ == '__main__':
 
         if not game_over:
             # отрисовка поля
-            [pygame.draw.rect(game_screen, (100, 100, 100), i, 1) for i in grid]
+            [pygame.draw.rect(game_screen, (60, 60, 60), i, 1) for i in grid]
 
         if not game_over:
             # отрисовка падающей фигуры
@@ -261,9 +272,8 @@ if __name__ == '__main__':
                 new_x, new_y = figure_rect.x, figure_rect.y
                 pygame.draw.rect(game_next, next_color, (new_x, new_y, new_width, new_width))
 
-            for i in range(5):
-                for j in range(5):
-                    pygame.draw.rect(game_next, (100, 100, 100), (j * 25, i * 25, 25, 25), 1)
+            for i, j in product(range(5), range(5)):
+                pygame.draw.rect(game_next, (100, 100, 100), (j * 25, i * 25, 25, 25), 1)
 
             # подсчёт времени
             time_now = int(time.time() - time_start)
@@ -294,9 +304,9 @@ if __name__ == '__main__':
 
             # окончание игры
             for i in range(width):
-                if field[0][i]:
+                if ((field[0][i] or field[1][i] or field[2][i]) and 4 <= i <= 6) or field[0][i]:
                     if sound_flag:
-                        pygame.mixer.music.load('game_over.mp3')
+                        pygame.mixer.music.load('music/game_over.mp3')
                         pygame.mixer.music.play()
                     set_record(score, time_str)
                     field = [[0 for i in range(width)] for i in range(height)]
@@ -313,7 +323,8 @@ if __name__ == '__main__':
 
         if flag:
             if sound_flag:
-                pygame.mixer.Channel(0).play(pygame.mixer.Sound('bonus (2).mp3'))
+                pygame.mixer.Channel(0).play(pygame.mixer.Sound('music/bonus (2).mp3'))
+                print(grid)
             for i in grid:
                 pygame.draw.rect(game_screen, get_color(), i)
                 screen.blit(game_screen, (340, 20))
@@ -321,14 +332,8 @@ if __name__ == '__main__':
                 clock.tick(200)
                 flag = False
             if sound_flag:
-                pygame.mixer.music.load('game.mp3')
+                pygame.mixer.music.load('music/game.mp3')
                 pygame.mixer.music.play(-1)
-
-        # пауза музыки
-        if pause:
-            pygame.mixer.music.pause()
-        else:
-            pygame.mixer.music.unpause()
 
         # отрисовка холстов
         screen.blit(title_tetris, (10, 10))
