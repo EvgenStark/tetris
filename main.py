@@ -324,7 +324,6 @@ if __name__ == '__main__':
         if flag:
             if sound_flag:
                 pygame.mixer.Channel(0).play(pygame.mixer.Sound('music/bonus (2).mp3'))
-                print(grid)
             for i in grid:
                 pygame.draw.rect(game_screen, get_color(), i)
                 screen.blit(game_screen, (340, 20))
