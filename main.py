@@ -57,6 +57,8 @@ if __name__ == '__main__':
     game_screen = pygame.Surface(GAMES_RES)
     game_over_screen = pygame.Surface(GAMES_RES)
     sound = pygame.Surface((200, 70))
+    pause_screen = pygame.Surface(GAMES_RES)
+    pause_screen.fill((41, 49, 51))
 
     clock = pygame.time.Clock()
 
@@ -78,17 +80,28 @@ if __name__ == '__main__':
     background = pygame.image.load('images/pygame.jpg').convert()
     game_background = pygame.image.load('images/board_1.png').convert()
 
+    mem_image3 = pygame.image.load('images/image_fun3.png')
+
     main_font = pygame.font.Font('fonts/unicephalon.otf', 65)
     font = pygame.font.Font('fonts/tet.ttf', 20)
     game_font = pygame.font.Font('fonts/unicephalon.otf', 35)
     game_text = pygame.font.Font('fonts/tet.ttf', 10)
     sound_text = pygame.font.Font('fonts/tet.ttf', 35)
+    pause_text1, pause_text2 = pygame.font.Font('fonts/unicephalon.otf', 35), pygame.font.Font('fonts/tet.ttf', 14)
 
     title_tetris = main_font.render('TETRIS', True, pygame.Color('orange'))
     title_score = font.render('score:', True, pygame.Color('red'))
     title_time_screen = font.render('time:', True, pygame.Color('red'))
     title_record_score = font.render('record score:', True, pygame.Color('yellow'))
     title_record_time = font.render('record time:', True, pygame.Color('yellow'))
+    pause_title1 = pause_text1.render('PAUSE', True, pygame.Color('white'))
+    pause_title2 = pause_text2.render('To continue the game,', True, pygame.Color('white'))
+    pause_title3 = pause_text2.render('press: Esc', True, pygame.Color('white'))
+
+    pause_screen.blit(pause_title1, (100, 280))
+    pause_screen.blit(pause_title2, (25, 320))
+    pause_screen.blit(pause_title3, (100, 350))
+    pause_screen.blit(mem_image3, (70, 40))
 
     get_color = random_color
 
@@ -120,6 +133,7 @@ if __name__ == '__main__':
         rotate2 = False
         dx = 0
         dy = 0
+
         if not game_over:
             screen.blit(background, (0, 0))
             screen.blit(game_screen, (340, 20))
@@ -334,17 +348,21 @@ if __name__ == '__main__':
                 pygame.mixer.music.load('music/game.mp3')
                 pygame.mixer.music.play(-1)
 
+        # пауза
+        if pause and not game_over:
+            screen.blit(pause_screen, (340, 20))
+
         # отрисовка холстов
         screen.blit(title_tetris, (10, 10))
         screen.blit(game_next, (190, 90))
-        screen.blit(title_score, (20, 90))
-        screen.blit(font.render(str(score), True, pygame.Color('white')), (20, 120))
-        screen.blit(title_time_screen, (20, 160))
-        screen.blit(font.render(str(time_str), True, pygame.Color('white')), (20, 200))
-        screen.blit(title_record_score, (20, 260))
-        screen.blit(font.render(str(record_score), True, pygame.Color('green')), (20, 300))
-        screen.blit(title_record_time, (20, 340))
-        screen.blit(font.render(str(record_time), True, pygame.Color('green')), (20, 380))
+        screen.blit(title_score, (20, 100))
+        screen.blit(font.render(str(score), True, pygame.Color('white')), (20, 140))
+        screen.blit(title_time_screen, (20, 180))
+        screen.blit(font.render(str(time_str), True, pygame.Color('white')), (20, 220))
+        screen.blit(title_record_score, (20, 290))
+        screen.blit(font.render(str(record_score), True, pygame.Color('green')), (20, 330))
+        screen.blit(title_record_time, (20, 370))
+        screen.blit(font.render(str(record_time), True, pygame.Color('green')), (20, 410))
         pygame.draw.rect(sound, color_sound, (0, 0, 200, 70), border_radius=15)
         sound.blit(sound_text.render('SOUND', True, pygame.Color('black')), (15, 15))
         screen.blit(sound, (20, 640))
